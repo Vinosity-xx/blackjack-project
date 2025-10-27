@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Blackjack</title>
+  <link rel="stylesheet" href="{% static 'game/style.css' %}">
+</head>
+<body>
+  <div class="table">
+    <form id="csrf-form">{% csrf_token %}</form>
+    <h1>Blackjack</h1>
+    <div id="bankroll">Balance: $1000</div>
+    <div id="status"></div>
+    <div id="winloss"></div>
+    <h2>Dealer</h2>
+    <div id="dealer-cards" class="hand"></div>
+    <h2>Player</h2>
+    <div id="hands-container"></div>
+    <div class="bet-input">
+      <label for="bet">Bet Amount: </label>
+      <input id="bet" type="number" value="50" min="1">
+      <button id="place-bet">Place Bet</button>
+    </div>
+    <div class="controls">
+      <button id="hit" disabled>Hit</button>
+      <button id="stand" disabled>Stand</button>
+      <button id="double" disabled>Double Down</button>
+      <button id="split" disabled>Split</button>
+      <button id="reset">Reset Game</button>
+    </div>
+  </div>
+
+  <script>
+    function getCSRFToken() {
+      return document.querySelector('#csrf-form input[name=csrfmiddlewaretoken]').value;
+    }
+
+    async function post(url, body = null) {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCSRFToken(),
+          'Accept': 'application/json',
+          'Content-Type': body ? 'application/json' : undefined
+        },
+        body: body ? JSON.stringify(body) : undefined
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        console.error(`Server error at ${url}:`, text);
+        return { message: `Error ${resp.status}: ${text}` };
+      }
+      return resp.json();
+    }
+
+    function renderState(data) {
+      console.log('renderState data:', data);
+
+      const container = document.getElementById('hands-container');
+      container.innerHTML = '';
+      const hands = data.hands || (data.player ? [data.player] : []);
+      hands.forEach((cards, i) => {
+        const div = document.createElement('div');
+        div.classList.add('hand');
+        if (data.active === i) div.classList.add('active-hand');
+        div.innerHTML = `<strong>Hand ${i + 1}:</strong> ` + cards.map(c => {
+          if (c === 'Hidden') {
+            return `<span class="card hidden">Hidden</span>`;
+          }
+          const isRed = /[♥♦]/.test(c);
+          const isBlack = /[♠♣]/.test(c);
+          const className = isRed ? 'red' : isBlack ? 'black' : '';
+          return `<span class="card ${className}">${c}</span>`;
+        }).join(' ');
+        container.appendChild(div);
+      });
+
+      const dealerDiv = document.getElementById('dealer-cards');
+      dealerDiv.innerHTML = (data.dealer || []).map((c, i) => {
+        if (c === 'Hidden') {
+          return `<span class="card hidden">Hidden</span>`;
+        }
+        const isRed = /[♥♦]/.test(c);
+        const isBlack = /[♠♣]/.test(c);
+        const className = isRed ? 'red' : isBlack ? 'black' : '';
+        return `<span class="card ${className}">${c}</span>`;
+      }).join(' ');
+
+      document.getElementById('status').textContent = data.message || '';
+      if (data.bankroll !== undefined) {
+        document.getElementById('bankroll').textContent = `Balance: $${data.bankroll}`;
+      }
+
+      const winloss = document.getElementById('winloss');
+      if (data.delta !== undefined) {
+        if (data.delta > 0) {
+          winloss.textContent = `+ $${data.delta}`;
+          winloss.className = 'win';
+        } else if (data.delta < 0) {
+          winloss.textContent = `- $${Math.abs(data.delta)}`;
+          winloss.className = 'loss';
+        } else {
+          winloss.textContent = '';
+          winloss.className = '';
+        }
+      } else {
+        winloss.textContent = '';
+        winloss.className = '';
+      }
+
+      const playing = data.status === 'playing' || data.status === 'split_playing';
+      console.log('Status:', data.status, 'Playing:', playing);
+      document.getElementById('hit').disabled = !playing;
+      document.getElementById('stand').disabled = !playing;
+      document.getElementById('double').disabled = !playing;
+      document.getElementById('split').disabled = !playing;
+      document.getElementById('place-bet').disabled = playing;
+      document.getElementById('reset').disabled = !playing && data.status !== 'waiting_for_bet';
+    }
+
+    document.getElementById('place-bet').onclick = async () => {
+      const amt = parseInt(document.getElementById('bet').value);
+      const data = await post('/api/bet/', { amount: amt });
+      console.log('Bet response:', data);
+      renderState(data);
+      if (data.status === 'playing') {
+        await startRound();
+      }
+    };
+
+    async function startRound() {
+      const data = await post('/api/new/');
+      console.log('New game response:', data);
+      renderState(data);
+    }
+
+    document.getElementById('hit').onclick = async () => {
+      const data = await post('/api/hit/');
+      renderState(data);
+    };
+
+    document.getElementById('stand').onclick = async () => {
+      const data = await post('/api/stand/');
+      renderState(data);
+    };
+
+    document.getElementById('double').onclick = async () => {
+      const data = await post('/api/double/');
+      renderState(data);
+    };
+
+    document.getElementById('split').onclick = async () => {
+      const data = await post('/api/split/');
+      renderState(data);
+    };
+
+    document.getElementById('reset').onclick = async () => {
+      const data = await post('/api/reset/');
+      console.log('Reset response:', data);
+      if (data.message === 'Game reset successfully') {
+        renderState(data);
+      } else if (data.status === 302) {
+        console.warn('Redirect detected, reloading page');
+        window.location.reload();
+      }
+    };
+  </script>
+</body>
+</html>

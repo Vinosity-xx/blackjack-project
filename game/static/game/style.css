@@ -1,0 +1,146 @@
+/* === GENERAL PAGE STYLING === */
+body {
+  background: radial-gradient(circle at center, #064e1a 0%, #032b0e 100%);
+  background-attachment: fixed;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Table “felt” look with glowing edge */
+.table-area {
+  background: radial-gradient(ellipse at center, #006b2b 0%, #013b13 100%);
+  border-radius: 50% / 20%;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.7) inset, 0 0 60px rgba(255, 255, 255, 0.1);
+  margin: 30px auto;
+  padding: 30px;
+  max-width: 1000px;
+}
+
+/* === CARD LOOK === */
+.card {
+  display: inline-block;
+  width: 60px;
+  height: 80px;
+  margin: 5px;
+  border-radius: 8px;
+  background-color: white;
+  color: black;
+  font-size: 17px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 80px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  border: 2px solid #222;
+}
+
+.card.red {
+  color: red;
+}
+
+/* === PLAYER HANDS === */
+#hands-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 15px;
+}
+
+.hand {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  transition: 0.3s;
+}
+
+.hand.active-hand {
+  border-color: gold;
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 12px gold;
+}
+
+/* === DEALER AREA === */
+#dealer-area {
+  margin-top: 20px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  display: inline-block;
+}
+
+#dealer-cards {
+  margin-top: 10px;
+}
+
+/* === TEXT AREAS === */
+#status {
+  margin-top: 15px;
+  font-size: 1.1rem;
+  min-height: 2em;
+}
+
+#bankroll {
+  font-size: 1.3rem;
+  margin-top: 10px;
+}
+
+#winloss {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.win {
+  color: #00ff77;
+}
+
+.loss {
+  color: #ff4444;
+}
+
+/* === BUTTONS === */
+button {
+  background: #1f1f1f;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+button:hover {
+  background: #444;
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* === INPUT FIELD === */
+input[type="number"] {
+  width: 80px;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* === HEADER === */
+h1 {
+  font-size: 2rem;
+  margin-top: 15px;
+  color: gold;
+  text-shadow: 1px 1px 2px black;
+}
