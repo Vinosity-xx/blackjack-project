@@ -27,6 +27,7 @@ Step 1: Clone the repo
 
 - Install Git
 - In terminal, run: git clone https://github.com/Vinosity-xx/blackjack-project
+- Go to directory where blackjack-project is saved. Ex. cd C:\Users\Jonathan Evans\Downloads\blackjack-project
 
 Step 2: Setup Virtual Environment
 
